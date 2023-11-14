@@ -2,24 +2,63 @@ import React, { useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
 import { useRef } from "react";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
 
-  const[isSignInForm, setIsSignForm] = useState(true)
+  const [isSignInForm, setIsSignForm] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
-  const toggleSignInForm = () => {
-    setIsSignForm(!isSignInForm)
-  }
+ 
 
   const name = useRef(null)
   const email = useRef(null)
   const password = useRef(null)
 
   const handleButtonClick = () => {
-    const message = checkValidData(email.current.value, password.current.value, name.current.value)
-    console.log(message);
+    const message = checkValidData(email.current.value, password.current.value)
+    setErrorMessage(message)
+
+    if (message) return;
+
+    if (!isSignInForm) {
+         createUserWithEmailAndPassword(
+           auth,
+           email.current.value,
+           password.current.value
+         )
+           .then((userCredential) => {
+             // Signed up
+             const user = userCredential.user;
+             console.log(user);
+         
+           })
+           .catch((error) => {
+             const errorCode = error.code;
+             const errorMessage = error.message;
+             setErrorMessage(errorCode + "_" + errorMessage);
+           });
+    } else {
+      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+         
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "_" + errorMessage)
+        });
+    }
+ 
 }
 
+   const toggleSignInForm = () => {
+     setIsSignForm(!isSignInForm);
+   };
 
   return (
     <div>
@@ -84,6 +123,7 @@ const Login = () => {
                   className="w-full p-2 rounded-md border border-gray-300"
                 />
               </div>
+              <p className="text-red-500 font-semibold mt-2" >{errorMessage }</p>
               <div className="flex items-center justify-between mb-4">
                 <label className="text-white">
                   <input type="checkbox" className="mr-2" />
