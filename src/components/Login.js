@@ -2,100 +2,100 @@ import React, { useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
 import { useRef } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
+import { AVATAR, BACKGROUND_LOGO } from "../utils/constant";
 
 const Login = () => {
-
-  const [isSignInForm, setIsSignForm] = useState(true)
-  const [errorMessage, setErrorMessage] = useState(null)
-  const dispatch = useDispatch()
+  const [isSignInForm, setIsSignForm] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
-  const name = useRef(null)
-  const email = useRef(null)
-  const password = useRef(null)
+  const name = useRef(null);
+  const email = useRef(null);
+  const password = useRef(null);
 
   const handleButtonClick = () => {
-    const message = checkValidData(email.current.value, password.current.value)
-    setErrorMessage(message)
+    const message = checkValidData(email.current.value, password.current.value);
+    setErrorMessage(message);
 
     if (message) return;
 
     if (!isSignInForm) {
-         createUserWithEmailAndPassword(
-           auth,
-           email.current.value,
-           password.current.value
-         )
-           .then((userCredential) => {
-             // Signed up
-             const user = userCredential.user;
-             
-            updateProfile(user, {
-              displayName: name.current.value,
-              photoURL:
-                "https://occ-0-2164-3467.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHRSk/AAAABRFZFS8db1R43jhQH8qYonvQ7XOdqfn1JEgczxD7Uz5vCGx-vnN18_sI8xORbinwQJzWgucNziIuHH8mhFA1iR7CGB8A4ms.png?r=eea",
-            })
-              .then(() => {
-                // Profile updated!
-                const { uid, email, displayName, photoURL } = user;
-                dispatch(
-                  addUser({
-                    uid: uid,
-                    email: email,
-                    displayName: displayName,
-                    photoURL: photoURL,
-                  })
-                );
-              
-              })
-              .catch((error) => {
-                // An error occurred
-                setErrorMessage(errorMessage);
-              });
-         
-           })
-           .catch((error) => {
-             const errorCode = error.code;
-             const errorMessage = error.message;
-             setErrorMessage(errorCode + "_" + errorMessage);
-             navigate("/error")
-           });
-    } else {
-      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
         .then((userCredential) => {
-          // Signed in
+          // Signed up
           const user = userCredential.user;
-          console.log(user);
-        
+
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: AVATAR,
+          })
+            .then(() => {
+              // Profile updated!
+              const { uid, email, displayName, photoURL } = user;
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  displayName: displayName,
+                  photoURL: photoURL,
+                })
+              );
+            })
+            .catch((error) => {
+              // An error occurred
+              setErrorMessage(errorMessage);
+            });
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          setErrorMessage(errorCode + "_" + errorMessage)
-          navigate("/error")
+          setErrorMessage(errorCode + "_" + errorMessage);
+          navigate("/error");
+        });
+    } else {
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "_" + errorMessage);
+          navigate("/error");
         });
     }
- 
-}
+  };
 
-   const toggleSignInForm = () => {
-     setIsSignForm(!isSignInForm);
-   };
+  const toggleSignInForm = () => {
+    setIsSignForm(!isSignInForm);
+  };
 
   return (
     <div>
       <Header />
       <div>
-        <img
-          src="https://assets.nflxext.com/ffe/siteui/vlv3/a73c4363-1dcd-4719-b3b1-3725418fd91d/fe1147dd-78be-44aa-a0e5-2d2994305a13/IN-en-20231016-popsignuptwoweeks-perspective_alpha_website_large.jpg"
-          alt="background-logo"
-        />
+        <img src={BACKGROUND_LOGO} alt="background-logo" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-black bg-opacity-70 p-8 rounded-md w-full max-w-sm">
             <h1 className="text-2xl text-white font-semibold mb-4">
@@ -151,7 +151,7 @@ const Login = () => {
                   className="w-full p-2 rounded-md border border-gray-300"
                 />
               </div>
-              <p className="text-red-500 font-semibold mt-2" >{errorMessage }</p>
+              <p className="text-red-500 font-semibold mt-2">{errorMessage}</p>
               <div className="flex items-center justify-between mb-4">
                 <label className="text-white">
                   <input type="checkbox" className="mr-2" />
